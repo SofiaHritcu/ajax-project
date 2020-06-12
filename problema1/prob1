@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Problema1</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        #from > h2 {
+            font-family: "Arial Black";
+            font-size: large;
+            color: red;
+        }
+        #to > h2 {
+            font-family: "Arial Black";
+            font-size: large;
+            color: green;
+        }
+        #departures{
+            font-family: Broadway;
+            list-style-type: circle;
+            color: lightcoral;
+        }
+        #arrivals{
+            font-family: Broadway;
+            color : lightgreen;
+        }
+    </style>
+</head>
+<body>
+<div id="from">
+    <h2>Statii Plecare</h2>
+    <ol id="departures"></ol>
+</div>
+<hr>
+<div id="to">
+    <h2>Statii Sosire</h2>
+    <ol id="arrivals">Click pe o plecare pentru vizualizarea destinatiilor!</ol>
+</div>
+</body>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            type:'GET',
+            url:'http://www.scs.ubbcluj.ro/~hsir2523/ajax/getAllDepartures.php',
+            success: function(departuresResult){
+                $("#departures").html(departuresResult);
+                $("#departures > li").on("click",function () {
+                    from =  $(this).html();
+                    if (from === ""){
+                        $("#arrivals").html("") = "";
+                        return;
+                    }
+                    $.ajax({
+                        type: 'GET',
+                        url:'http://www.scs.ubbcluj.ro/~hsir2523/ajax/getArrivalsForDeparture.php',
+                        data:'d='+from,
+                        success: function (arrivalsResult) {
+                            $("#arrivals").html(arrivalsResult);
+                        }
+                    })
+                })
+            }
+        });
+    })
+</script>
+</html>

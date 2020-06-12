@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Problema2</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        div{
+            justify-content: center;
+            display: flex;
+            margin-top: 100px;
+        }
+        div > div {
+            display: flex;
+            justify-content: center;
+            display: inline-block;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+        input{
+            border: 2px solid darkblue;
+            background-color: lightblue;
+            height: 30px;
+            color: darkblue;
+            font-size: large;
+        }
+        p{
+            font-size: large;
+            margin-top: 0;
+            font-family: "Arial Black";
+            color: cornflowerblue;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div><input type="button" id="prev" value="<<"></div>
+    <div><p id="persons">Persoane</p></div>
+    <div><input type="button" id="next" value=">>"></div>
+</div>
+<script>
+    var noPersons = 0;
+    var i = -1;
+    var prevAction = "next";
+    $(document).ready(function () {
+        $('#prev').attr('disabled',true);
+        $.ajax({
+            type:'GET',
+            url:'http://scs.ubbcluj.ro/~hsir2523/ajax/getNumberPersons.php',
+            success:function (size) {
+                noPersons=size;
+            }
+        });
+
+        $('#prev').on("click",function () {
+            if ( i === noPersons - 1 ){
+                $('#next').removeAttr('disabled');
+            }
+            if ( prevAction == "next" && i !== noPersons - 1 ){
+                i = i - 2;
+            }
+            $.ajax({
+                type: 'GET',
+                url: 'http://scs.ubbcluj.ro/~hsir2523/ajax/getPrev.php',
+                data : 'index='+i+'&size='+noPersons,
+                success: function (personRes) {
+                    $('#persons').html(personRes);
+                    var noPersPrev = document.getElementById('persons').childElementCount/2;
+                    i -= noPersPrev;
+                    prevAction = "prev";
+                    availablePrev();
+                }
+            })
+        });
+        $('#next').on("click",function () {
+            if ( i >= 2 ){
+                $('#prev').removeAttr('disabled');
+            }
+            if ( prevAction === "prev"){
+                i = i + 2 ;
+            }
+
+            $.ajax({
+                type: 'GET',
+                url: 'http://scs.ubbcluj.ro/~hsir2523/ajax/getNext.php',
+                data : 'index='+i+'&size='+noPersons,
+                success: function (personRes) {
+                    $('#persons').html(personRes);
+                    var noPersPrev = document.getElementById('persons').childElementCount/2;
+                    i += noPersPrev;
+                    prevAction = "next";
+                    availableNext();
+                }
+            })
+        })
+    });
+
+    function availablePrev() {
+        if (i < 2){
+            $('#prev').attr('disabled',true);
+        }
+        else{
+            $('#prev').removeAttr('disabled');
+        }
+    }
+    function availableNext() {
+        if (i >= noPersons - 1){
+            $('#next').attr('disabled',true);
+        }
+        else{
+            $('#next').removeAttr('disabled');
+        }
+    }
+</script>
+</body>
+</html>

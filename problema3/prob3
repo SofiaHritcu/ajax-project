@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Problema3</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        div > h2{
+            color: green;
+            font-size: large;
+            font-family: Verdana;
+            margin-left: 100px;
+        }
+        ol > li{
+            color: lightgreen;
+            font-size: medium;
+            font-family: Verdana;
+            list-style-type: circle;
+            display: inline;
+            border: 2px lightgoldenrodyellow solid;
+            padding: 10px 30px;
+            margin: 10px;
+        }
+        label{
+            color: lightblue;
+            font-family: Verdana;
+            font-size: large;
+        }
+        input{
+            border: 2px solid lightskyblue;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <h2>Valorile cheilor sunt : </h2>
+    <br>
+    <ol id="keys"></ol>
+    <br><hr>
+    <form id="attr">
+        <label for="name">Nume:</label><input type="text" id="name"><br>
+        <label for="quantity">Cantitate:</label><input type="number" id="quantity" min="0"><br>
+        <label for="comments">Specificari:</label><input type="text" id="comments"><br>
+        <label for="discount">Reducere:</label><input type="number" id="discount" min="0" max="100"><br>
+        <input type="submit" id="save" value="SAVE" disabled="disabled">
+    </form>
+</div>
+<script>
+    var unsaved = 0;
+    var idToBeSaved = -1;
+    $(document).ready(function () {
+        $('#attr').on('submit',function () {
+            unsaved = 0;
+            save(idToBeSaved);
+            return false;
+        });
+
+        function enableButton() {
+            unsaved = 1;
+            $('#save').removeAttr('disabled')
+        }
+
+        $.ajax({
+            type : 'GET',
+            url:'http://www.scs.ubbcluj.ro/~hsir2523/ajax/getAllIndexes.php',
+            success  : function (indexes) {
+                $('#keys').html(indexes)
+                $(document.body).on('change','input',function(){
+                    enableButton();
+                }).change();
+
+            }
+        });
+        function save(id) {
+            var formText = "id=" +id + "&";
+            formText += "name="+$("#name").val()+"&";
+            formText += "quantity="+$("#quantity").val()+"&";
+            formText += "comments="+$("#comments").val()+"&";
+            formText += "discount="+$("#discount").val()+"&";
+            $.ajax({
+                type: 'POST',
+                url: 'http://www.scs.ubbcluj.ro/~hsir2523/ajax/update.php',
+                data: formText,
+                contentType:"application/x-www-form-urlencoded",
+                success: function(answer){
+                    alert(answer);
+                }
+            });
+            unsaved = 0;
+        }
+
+        $('#keys').on("click","li",function () {
+            var id = $(this).html();
+            if (unsaved == 1){
+                var clientAns = confirm('Doriti ca datele modificate sa fie salvate ?');
+                if (clientAns === true){
+                    save(id)
+                }
+            }
+            $('#save').attr('disabled',true);
+            var idVal = $(this).html();
+            idToBeSaved = idVal;
+            $.ajax({
+                type : 'GET',
+                url:'http://www.scs.ubbcluj.ro/~hsir2523/ajax/getAttributes.php',
+                data : 'id='+idVal ,
+                success  : function (attributes) {
+                    completeForm(attributes);
+                }
+            });
+        })
+    });
+    function  completeForm(attrs) {
+        var attributes = attrs.split(',');
+        $('#name').val(attributes[0]);
+        $('#quantity').val(attributes[1]);
+        $('#comments').val(attributes[2]);
+        $('#discount').val(attributes[3]);
+    }
+</script>
+</body>
+</html>
